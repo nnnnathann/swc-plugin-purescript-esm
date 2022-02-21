@@ -1,12 +1,15 @@
 {
-  "scripts": {
-    "test": "uvu -r @swc-node/register tests"
-  },
-  "devDependencies": {
-    "@swc-node/register": "^1.4.2",
-    "@swc/core": "^1.2.143",
-    "@types/node": "^17.0.18",
-    "prettier": "^2.5.1",
-    "uvu": "^0.5.3"
-  }
+    "name": "swc-plugin-purescript-esm",
+    "type": "module",
+    "scripts": {
+        "prepublish": "swc src -d dist",
+        "test": "uvu tests"
+    },
+    "devDependencies": {
+        "@swc-node/register": "^1.4.2",
+        "@swc/core": "^1.2.143",
+        "@types/node": "^17.0.18",
+        "prettier": "^2.5.1",
+        "uvu": "^0.5.3"
+    }
 }

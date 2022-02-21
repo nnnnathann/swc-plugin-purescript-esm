@@ -1,39 +1,62 @@
-import {
-    AssignmentExpression,
-    Identifier,
-    KeyValueProperty,
-    MemberExpression,
-    ExpressionStatement,
-    ModuleItem,
-    ObjectExpression,
-    ModuleDeclaration,
-    ExportNamedDeclaration,
-    Statement,
-    Expression,
-    PropertyName,
-} from "@swc/core";
+/**
+ @typedef {import('@swc/core').AssignmentExpression} AssignmentExpression;
+ @typedef {import('@swc/core').Identifier} Identifier;
+ @typedef {import('@swc/core').KeyValueProperty} KeyValueProperty;
+ @typedef {import('@swc/core').MemberExpression} MemberExpression;
+ @typedef {import('@swc/core').ExpressionStatement} ExpressionStatement;
+ @typedef {import('@swc/core').ModuleItem} ModuleItem;
+ @typedef {import('@swc/core').ObjectExpression} ObjectExpression;
+ @typedef {import('@swc/core').ModuleDeclaration} ModuleDeclaration;
+ @typedef {import('@swc/core').ExportNamedDeclaration} ExportNamedDeclaration;
+ @typedef {import('@swc/core').Statement} Statement;
+ @typedef {import('@swc/core').Expression} Expression;
+ @typedef {import('@swc/core').PropertyName} PropertyName;
+**/
 import { Visitor } from "@swc/core/Visitor.js";
-import { createSpan, createIdentifier } from "./create";
-import { randomId } from "./randomId";
+import { createSpan, createIdentifier } from "./create.js";
+import { randomId } from "./randomId.js";
 
 export class ReplaceModuleExports extends Visitor {
-    visitModuleItems(items: ModuleItem[]): ModuleItem[] {
+    /**
+     *
+     * @param {ModuleItem[]} items
+     * @returns {ModuleItem[]}
+     */
+    visitModuleItems(items) {
         return items.flatMap(this.visitModuleItemSpread);
     }
-    visitModuleItemSpread = (item: ModuleItem): ModuleItem[] => {
+    /**
+     *
+     * @param {ModuleItem} item
+     * @returns {ModuleItem[]}
+     */
+    visitModuleItemSpread = (item) => {
         if (!isModuleExports(item)) {
             return [this.visitModuleItem(item)];
         }
         return getSpecifiers(item.expression.right.properties);
     };
 }
-
-function getSpecifiers(
-    props: KeyValueProperty[]
-): (ModuleDeclaration | Statement)[] {
-    return props.flatMap((prop): (ModuleDeclaration | Statement)[] => {
+/**
+ * returns a seqence of statements
+ * corresponding to a module.exports block, given
+ * the key-value right hand side of a module.exports,
+ * for example:
+ *
+ * module.exports = { hello: "world", foo: foo };
+ *
+ * turns into something like
+ *
+ * export { foo }
+ * var hello_121209 = "world";
+ * export { hello_121209 as hello };
+ * @param {KeyValueProperty[]} props
+ * @returns {(ModuleDeclaration | Statement)[]}
+ */
+function getSpecifiers(props) {
+    return props.flatMap((prop) => {
         if (isPunnable(prop)) {
-            return [createExportPun((prop.key as Identifier).value)];
+            return [createExportPun(prop.key.value)];
         }
         const exportedName = getName(prop.key);
         if (exportedName === null) {
@@ -44,16 +67,23 @@ function getSpecifiers(
     });
 }
 
-function getName(key: PropertyName): string | number | null {
+/**
+ *
+ * @param {PropertyName} key
+ * @returns {string | number | null}
+ */
+function getName(key) {
     if (key.type === "Computed") {
         return null;
     }
     return key.value;
 }
-
-function createExportPun(
-    name: string
-): ExportNamedDeclaration & { typeOnly: boolean } {
+/**
+ *
+ * @param {string} name
+ * @returns {ExportNamedDeclaration & { typeOnly: boolean }}
+ */
+function createExportPun(name) {
     return {
         type: "ExportNamedDeclaration",
         span: createSpan(),
@@ -69,10 +99,13 @@ function createExportPun(
     };
 }
 
-function createAliasedExport(
-    exportedName: string | number,
-    value: Expression
-): (ModuleDeclaration | Statement)[] {
+/**
+ *
+ * @param {string|number} exportedName
+ * @param {Expression} value
+ * @returns {(ModuleDeclaration | Statement)[]}
+ */
+function createAliasedExport(exportedName, value) {
     const tmpVarName = `${exportedName}_${randomId()}`;
     return [
         {
@@ -108,41 +141,24 @@ function createAliasedExport(
         },
     ];
 }
-
-function isMappable(prop: KeyValueProperty): prop is Mappable {
-    if (prop.key.type !== "Identifier") {
-        return false;
-    }
-    if (prop.key.value === "default") {
-        return true;
-    }
-    return true;
-}
-
-function isPunnable(prop: KeyValueProperty) {
+/**
+ *
+ * @param {KeyValueProperty} prop
+ * @returns {boolean}
+ */
+function isPunnable(prop) {
     return (
         prop.key.type === "Identifier" &&
         prop.value.type === "Identifier" &&
         prop.key.value === prop.value.value
     );
 }
-
-interface Mappable extends KeyValueProperty {
-    key: Identifier;
-}
-interface ModuleExports extends ExpressionStatement {
-    expression: ModuleExportsAssignmentExpression;
-}
-interface ModuleExportsAssignmentExpression extends AssignmentExpression {
-    left: MemberExpression;
-    right: PSObjectExpression;
-}
-interface PSObjectExpression extends ObjectExpression {
-    properties: PSObjectProperty[];
-}
-interface PSObjectProperty extends KeyValueProperty {}
-
-function isModuleExports(e: ModuleItem): e is ModuleExports {
+/**
+ *
+ * @param {ModuleItem} e
+ * @returns {boolean}
+ */
+function isModuleExports(e) {
     if (e.type !== "ExpressionStatement") {
         return false;
     }

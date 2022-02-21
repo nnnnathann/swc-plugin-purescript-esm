@@ -348,7 +348,7 @@
   
   ////////
   
-  module.exports = {
+  export {
     createSpan,
     createIdentifier,
     createStringLiteral,
