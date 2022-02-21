@@ -153,7 +153,7 @@ function createExportPun(name) {
  * @returns {(ModuleDeclaration | Statement)[]}
  */
 function createAliasedExport(exportedName, value) {
-    const tmpVarName = `${exportedName}_${randomId()}`;
+    const tmpVarName = `${exportedName}_${randomId()}`.replace(/[^\w_]/gi, "");
     return [
         {
             type: "VariableDeclaration",
