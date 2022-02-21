@@ -118,7 +118,7 @@ function getAllAsExportDefault(props) {
             expression: {
                 type: "Identifier",
                 span: createSpan(),
-                value: "_default",
+                value: "$$default",
                 optional: false,
             },
         },
