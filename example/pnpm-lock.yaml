@@ -5,14 +5,14 @@ specifiers:
   '@swc/core': ^1.2.143
   purescript: ^0.14.5
   spago: ^0.20.7
-  swc-plugin-purescript-esm: ^0.0.1
+  swc-plugin-purescript-esm: ^0.0.2
 
 devDependencies:
   '@swc/cli': 0.1.55_@swc+core@1.2.143
   '@swc/core': 1.2.143
   purescript: 0.14.5
   spago: 0.20.7
-  swc-plugin-purescript-esm: 0.0.1_@swc+core@1.2.143
+  swc-plugin-purescript-esm: 0.0.2_@swc+core@1.2.143
 
 packages:
 
@@ -1511,8 +1511,8 @@ packages:
       has-flag: 3.0.0
     dev: true
 
-  /swc-plugin-purescript-esm/0.0.1_@swc+core@1.2.143:
-    resolution: {integrity: sha512-9PaVDgq4JRO1XT2m/SCGAwDeq3YqD72bpZZlqn0cke8v+CT5l0BcFblA5+AIH7ApUH9oBNN1rr0R1oKM8mVHDg==}
+  /swc-plugin-purescript-esm/0.0.2_@swc+core@1.2.143:
+    resolution: {integrity: sha512-CdbSidoMJtekfhORSmHqmA8Gii7HTJma5zEvihDIHI+eK4Ht5RqgqbuM3Ay8cFECwPWQfNvhFeQZUTz6Za764g==}
     peerDependencies:
       '@swc/core': ^1
     dependencies:

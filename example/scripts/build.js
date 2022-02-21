@@ -4,17 +4,45 @@ import { execSync } from "child_process";
 import fs from "fs/promises";
 import { plugin } from "swc-plugin-purescript-esm";
 
-execSync("spago build", { uid: process.getuid() });
+// run spago like normal
+execSync("npx spago build", { uid: process.getuid() });
 
+// get the output path of spago
 const inputDir = join(
     process.cwd(),
     execSync("npx spago path output").toString().trim()
 );
-const outDir = "output_esm";
+// set the out dir to normal output dir with suffix
+const outDir = inputDir + "_esm";
 
+/**
+ * SWC from what I can tell does not have a node
+ * api to compile a dir like it's command line counterpart
+ * @param {string} inDir
+ * @param {string} outDir
+ * @returns {Promise<void>}
+ */
 async function transpileDir(inDir, outDir) {
+    const psOutputFiles = await readPursOutputFiles(inDir);
+    const thunks = psOutputFiles.map((file) => async () => {
+        const outFile = join(outDir, relative(inDir, file));
+        const { code } = await transformFile(file, { plugin: plugin() });
+        await fs.mkdir(dirname(outFile), { recursive: true });
+        return fs.writeFile(outFile, code);
+    });
+    await Promise.all(thunks.map((thunk) => thunk()));
+}
+
+/**
+ * Reads the output js files from disk
+ *
+ * (there are probably better ways to do this)
+ *
+ * @param {string} inDir
+ * @returns {Promise<string[]>}
+ */
+async function readPursOutputFiles(inDir) {
     const all = await fs.readdir(inDir);
-    all.slice(0, 2);
     const files = await Promise.all(
         all.map(async (root) => {
             const fullPath = join(inDir, root);
@@ -28,14 +56,7 @@ async function transpileDir(inDir, outDir) {
                 .then((files) => files.filter((file) => file.endsWith(".js")));
         })
     );
-    await Promise.all(
-        files.flat().map(async (file) => {
-            const outFile = join(outDir, relative(inDir, file));
-            const { code } = await transformFile(file, { plugin: plugin() });
-            await fs.mkdir(dirname(outFile), { recursive: true });
-            return fs.writeFile(outFile, code);
-        })
-    );
+    return files.flat();
 }
 
 transpileDir(inputDir, outDir);

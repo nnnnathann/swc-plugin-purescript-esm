@@ -8,6 +8,6 @@
         "@swc/core": "^1.2.143",
         "purescript": "^0.14.5",
         "spago": "^0.20.7",
-        "swc-plugin-purescript-esm": "^0.0.1"
+        "swc-plugin-purescript-esm": "^0.0.2"
     }
 }
