@@ -117,7 +117,7 @@ function createAliasedExport(exportedName, value) {
                 {
                     type: "VariableDeclarator",
                     span: createSpan(),
-                    id: createIdentifier(exportedName),
+                    id: createIdentifier(tmpVarName),
                     init: value,
                     definite: true,
                 },
