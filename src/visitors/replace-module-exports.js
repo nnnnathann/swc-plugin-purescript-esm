@@ -13,7 +13,7 @@
  @typedef {import('@swc/core').PropertyName} PropertyName;
 **/
 import { Visitor } from "@swc/core/Visitor.js";
-import { createSpan, createIdentifier } from "./create.js";
+import { createSpan, createIdentifier, createStringLiteral } from "./create.js";
 import { randomId } from "./randomId.js";
 
 export class ReplaceModuleExports extends Visitor {
@@ -172,13 +172,13 @@ function createAliasedExport(exportedName, value) {
         },
         {
             type: "ExportNamedDeclaration",
-            span: { start: 23, end: 51, ctxt: 0 },
+            span: createSpan(),
             specifiers: [
                 {
                     type: "ExportSpecifier",
                     span: createSpan(),
                     orig: createIdentifier(tmpVarName),
-                    exported: createIdentifier(exportedName),
+                    exported: createStringLiteral(exportedName),
                     isTypeOnly: false,
                 },
             ],
