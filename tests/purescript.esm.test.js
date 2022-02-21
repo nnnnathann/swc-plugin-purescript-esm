@@ -4,6 +4,7 @@ import { transformFileSync, transformSync } from "@swc/core";
 import { plugin } from "../src/index.js";
 
 test("Should export an esm compatible file", () => {
+    console.log("transpiling");
     const { code } = transformFileSync("./testdata/01input.js", {
         plugin: plugin(),
     });

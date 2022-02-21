@@ -34,7 +34,10 @@ export class ReplaceModuleExports extends Visitor {
         if (!isModuleExports(item)) {
             return [this.visitModuleItem(item)];
         }
-        return getSpecifiers(item.expression.right.properties);
+        return [
+            ...getSpecifiers(item.expression.right.properties),
+            ...getAllAsExportDefault(item.expression.right.properties),
+        ];
     };
 }
 /**
@@ -78,6 +81,50 @@ function getName(key) {
     }
     return key.value;
 }
+
+/**
+ * @param {KeyValueProperty[]} props
+ */
+function getAllAsExportDefault(props) {
+    return [
+        {
+            type: "VariableDeclaration",
+            span: createSpan(),
+            kind: "const",
+            declare: false,
+            declarations: [
+                {
+                    type: "VariableDeclarator",
+                    span: createSpan(),
+                    id: {
+                        type: "Identifier",
+                        span: createSpan(),
+                        value: "$$default",
+                        optional: false,
+                        typeAnnotation: null,
+                    },
+                    init: {
+                        type: "ObjectExpression",
+                        span: createSpan(),
+                        properties: props,
+                    },
+                    definite: false,
+                },
+            ],
+        },
+        {
+            type: "ExportDefaultExpression",
+            span: createSpan(),
+            expression: {
+                type: "Identifier",
+                span: createSpan(),
+                value: "_default",
+                optional: false,
+            },
+        },
+    ];
+}
+
 /**
  *
  * @param {string} name
