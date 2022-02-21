@@ -1,6 +1,6 @@
 {
     "name": "swc-plugin-purescript-esm",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "type": "module",
     "license": "ISC",
     "main": "src/index.js",
