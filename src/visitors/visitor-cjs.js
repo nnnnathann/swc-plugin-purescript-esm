@@ -1,3 +1,4 @@
+// Copied from https://github.com/mohdovais/swc-plugin-cjs-to-esm/blob/main/plugin/visitor-cjs.js
 import { Visitor } from "@swc/core/Visitor.js";
 import {
     createStringLiteralStatement,
