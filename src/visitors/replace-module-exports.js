@@ -13,7 +13,12 @@
  @typedef {import('@swc/core').PropertyName} PropertyName;
 **/
 import { Visitor } from "@swc/core/Visitor.js";
-import { createSpan, createIdentifier, createStringLiteral } from "./create.js";
+import {
+    createSpan,
+    createIdentifier,
+    createStringLiteral,
+    createKeyValueProperty,
+} from "./create.js";
 import { randomId } from "./randomId.js";
 
 export class ReplaceModuleExports extends Visitor {
@@ -23,6 +28,16 @@ export class ReplaceModuleExports extends Visitor {
      * @returns {ModuleItem[]}
      */
     visitModuleItems(items) {
+        const exportsAssignments = items.filter(isExportsAssignment);
+        if (exportsAssignments.length) {
+            const kvProps = exportsAssignments.map((e) =>
+                createKeyValueProperty(
+                    e.expression.left.property,
+                    e.expression.right
+                )
+            );
+            return exportPropertiesList([kvProps[0]]);
+        }
         return items.flatMap(this.visitModuleItemSpread);
     }
     /**
@@ -34,11 +49,17 @@ export class ReplaceModuleExports extends Visitor {
         if (!isModuleExports(item)) {
             return [this.visitModuleItem(item)];
         }
-        return [
-            ...getSpecifiers(item.expression.right.properties),
-            ...getAllAsExportDefault(item.expression.right.properties),
-        ];
+        return exportPropertiesList(item.expression.right.properties);
     };
+}
+
+/**
+ *
+ * @param {KeyValueProperty[]} props
+ * @returns {(ModuleDeclaration | Statement)[]}
+ */
+function exportPropertiesList(props) {
+    return [...getSpecifiers(props), ...getAllAsExportDefault(props)];
 }
 /**
  * returns a seqence of statements
@@ -77,6 +98,9 @@ function getSpecifiers(props) {
  */
 function getName(key) {
     if (key.type === "Computed") {
+        if (key.expression.type === "StringLiteral") {
+            return key.expression.value;
+        }
         return null;
     }
     return key.value;
@@ -231,4 +255,16 @@ function isModuleExports(e) {
         return false;
     }
     return true;
+}
+
+function isExportsAssignment(item) {
+    const path = [
+        item.type,
+        item.expression?.type,
+        item.expression?.left?.type,
+        item.expression?.left?.object?.value,
+    ].join(".");
+    const exportsPath =
+        "ExpressionStatement.AssignmentExpression.MemberExpression.exports";
+    return path === exportsPath;
 }

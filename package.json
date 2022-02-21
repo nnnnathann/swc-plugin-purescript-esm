@@ -9,10 +9,12 @@
         "LICENSE"
     ],
     "scripts": {
-        "test": "uvu tests"
+        "test": "uvu tests",
+        "test:watch": "nodemon --ignore testdata/ast_repl_output.json --ignore testdata/*.esm.js -w src -w tests -w testdata -x 'uvu tests'"
     },
     "devDependencies": {
         "@swc/core": "^1.2.143",
+        "nodemon": "^2.0.15",
         "uvu": "^0.5.3"
     },
     "peerDependencies": {
